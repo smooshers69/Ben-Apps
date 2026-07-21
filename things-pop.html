@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Things Pop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2B2140;
+    --paper:#FFF8EC;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
+  html,body{
+    margin:0; padding:0; height:100%; overflow:hidden;
+    background:var(--paper);
+    font-family:'Nunito', sans-serif;
+    touch-action:manipulation;
+  }
+  .app{
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+  }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 4px 6px 10px;
+  }
+  .brand{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:22px;
+    color:var(--ink);
+    letter-spacing:0.5px;
+  }
+  .brand span{color:#FF6B5B;}
+  .navchip{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--ink);
+    background:#fff;
+    border:2px solid var(--ink);
+    border-radius:999px;
+    padding:6px 12px;
+    opacity:0.85;
+  }
+  .stage{
+    flex:1;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    min-height:0;
+  }
+  .tile{
+    position:relative;
+    border-radius:32px;
+    border:5px solid var(--ink);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    overflow:hidden;
+    cursor:pointer;
+    transition: transform 0.08s ease;
+  }
+  .tile:active{ transform:scale(0.94); }
+  .tile.pop{ animation: pop 0.42s ease; }
+  @keyframes pop{
+    0%{ transform:scale(1); }
+    30%{ transform:scale(1.08) rotate(-2deg); }
+    55%{ transform:scale(0.96) rotate(2deg); }
+    100%{ transform:scale(1); }
+  }
+  .emoji{
+    font-size:min(20vw, 130px);
+    line-height:1;
+    filter: drop-shadow(0 6px 0 rgba(0,0,0,0.12));
+  }
+  .wordname{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:min(10.5vw, 46px);
+    color:var(--ink);
+    line-height:1;
+    text-shadow: 3px 3px 0 rgba(255,255,255,0.55);
+    text-align:center;
+    white-space:nowrap;
+  }
+  .wordname.long{
+    font-size:min(8vw, 34px);
+  }
+  .tag{
+    font-family:'Nunito', sans-serif;
+    font-weight:800;
+    font-size:min(5vw, 20px);
+    color:var(--ink);
+    background:rgba(255,255,255,0.6);
+    padding:3px 14px;
+    border-radius:999px;
+  }
+  .sparkle{
+    position:absolute;
+    font-size:38px;
+    opacity:0;
+    pointer-events:none;
+  }
+  .sparkle.go{ animation: rise 0.7s ease-out forwards; }
+  @keyframes rise{
+    0%{ opacity:1; transform:translateY(0) scale(0.6) rotate(0deg); }
+    100%{ opacity:0; transform:translateY(-70px) scale(1.3) rotate(30deg); }
+  }
+  .bottombar{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    padding-top:12px;
+  }
+  .navbtn{
+    width:52px; height:52px;
+    border-radius:50%;
+    border:3px solid var(--ink);
+    background:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .navbtn:active{ transform:scale(0.9); }
+  .dots{
+    display:flex; gap:5px; flex-wrap:wrap; max-width:140px; justify-content:center;
+  }
+  .dot{
+    width:8px; height:8px; border-radius:50%;
+    background:#D8D0E6;
+  }
+  .dot.active{ background:var(--ink); width:18px; border-radius:6px; transition: all 0.2s ease; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">Things <span>Pop</span></div>
+    <div class="navchip" id="pairLabel">Teddy · Cake</div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="tile" id="tileLeft">
+      <div class="emoji" id="emojiLeft">🧸</div>
+      <div class="wordname" id="nameLeft">Teddy</div>
+      <div class="tag" id="tagLeft">It's a toy</div>
+    </div>
+    <div class="tile" id="tileRight">
+      <div class="emoji" id="emojiRight">🎂</div>
+      <div class="wordname" id="nameRight">Cake</div>
+      <div class="tag" id="tagRight">It's a treat</div>
+    </div>
+  </div>
+
+  <div class="bottombar">
+    <div class="navbtn" id="prevBtn">‹</div>
+    <div class="dots" id="dots"></div>
+    <div class="navbtn" id="nextBtn">›</div>
+  </div>
+</div>
+
+<script>
+const pairs = [
+  { colors:['#3AA6A6','#FF6B5B'],
+    left:{emoji:'🧸', word:'Teddy', tag:'a toy'}, right:{emoji:'🎂', word:'Cake', tag:'a treat'} },
+  { colors:['#FFC94D','#7B61FF'],
+    left:{emoji:'⚽️', word:'Ball', tag:'a toy'}, right:{emoji:'🧁', word:'Cupcake', tag:'a treat'} },
+  { colors:['#4CC38A','#FF8FB1'],
+    left:{emoji:'🚗', word:'Car', tag:'a toy'}, right:{emoji:'🍪', word:'Cookie', tag:'a treat'} },
+  { colors:['#FF6B5B','#3AA6A6'],
+    left:{emoji:'🧱', word:'Blocks', tag:'a toy'}, right:{emoji:'🕯️', word:'Candle', tag:'for cake'} },
+  { colors:['#7B61FF','#FFC94D'],
+    left:{emoji:'🥁', word:'Drum', tag:'a toy'}, right:{emoji:'🥄', word:'Spoon', tag:'for eating'} },
+  { colors:['#FF8FB1','#4CC38A'],
+    left:{emoji:'🚂', word:'Train', tag:'a toy'}, right:{emoji:'☕️', word:'Cup', tag:'for drinking'} },
+  { colors:['#3AA6A6','#FF6B5B'],
+    left:{emoji:'🪁', word:'Kite', tag:'a toy'}, right:{emoji:'🥣', word:'Bowl', tag:'for food'} },
+  { colors:['#FFC94D','#7B61FF'],
+    left:{emoji:'🎈', word:'Balloon', tag:'a toy'}, right:{emoji:'🍩', word:'Donut', tag:'a treat'} },
+  { colors:['#4CC38A','#FF8FB1'],
+    left:{emoji:'🧩', word:'Puzzle', tag:'a toy'}, right:{emoji:'🍫', word:'Chocolate', tag:'a treat'} },
+  { colors:['#FF6B5B','#3AA6A6'],
+    left:{emoji:'🦆', word:'Duck', tag:'a toy'}, right:{emoji:'🍓', word:'Strawberry', tag:'a treat'} },
+];
+
+let idx = 0;
+const stage = document.getElementById('stage');
+const tileLeft = document.getElementById('tileLeft');
+const tileRight = document.getElementById('tileRight');
+const emojiLeft = document.getElementById('emojiLeft');
+const emojiRight = document.getElementById('emojiRight');
+const nameLeft = document.getElementById('nameLeft');
+const nameRight = document.getElementById('nameRight');
+const tagLeft = document.getElementById('tagLeft');
+const tagRight = document.getElementById('tagRight');
+const pairLabel = document.getElementById('pairLabel');
+const dotsEl = document.getElementById('dots');
+
+function renderDots(){
+  dotsEl.innerHTML = '';
+  pairs.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === idx ? ' active' : '');
+    dotsEl.appendChild(d);
+  });
+}
+
+function renderPair(){
+  const p = pairs[idx];
+  tileLeft.style.background = p.colors[0];
+  tileRight.style.background = p.colors[1];
+  emojiLeft.textContent = p.left.emoji;
+  emojiRight.textContent = p.right.emoji;
+  nameLeft.textContent = p.left.word;
+  nameRight.textContent = p.right.word;
+  nameLeft.classList.toggle('long', p.left.word.length > 7);
+  nameRight.classList.toggle('long', p.right.word.length > 7);
+  tagLeft.textContent = 'It\u2019s ' + p.left.tag;
+  tagRight.textContent = 'It\u2019s ' + p.right.tag;
+  pairLabel.textContent = p.left.word + ' · ' + p.right.word;
+  renderDots();
+}
+
+// --- Speech ---
+let enVoice = null;
+function pickVoice(){
+  const voices = speechSynthesis.getVoices();
+  enVoice = voices.find(v => v.lang === 'en-GB')
+        || voices.find(v => v.lang && v.lang.startsWith('en'))
+        || null;
+}
+if ('speechSynthesis' in window){
+  pickVoice();
+  speechSynthesis.onvoiceschanged = pickVoice;
+}
+
+function speak(word, tag){
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u1 = new SpeechSynthesisUtterance(word);
+  u1.lang = 'en-GB';
+  if (enVoice) u1.voice = enVoice;
+  u1.rate = 0.82;
+  u1.pitch = 1.1;
+  const u2 = new SpeechSynthesisUtterance('It\u2019s ' + tag);
+  u2.lang = 'en-GB';
+  if (enVoice) u2.voice = enVoice;
+  u2.rate = 0.85;
+  u2.pitch = 1.1;
+  speechSynthesis.speak(u1);
+  speechSynthesis.speak(u2);
+}
+
+const sparkleEmojis = ['✨','⭐️','🌟','💥'];
+function burst(tile){
+  const s = document.createElement('div');
+  s.className = 'sparkle';
+  s.textContent = sparkleEmojis[Math.floor(Math.random()*sparkleEmojis.length)];
+  s.style.left = (30 + Math.random()*40) + '%';
+  s.style.top = (25 + Math.random()*30) + '%';
+  tile.appendChild(s);
+  requestAnimationFrame(() => s.classList.add('go'));
+  setTimeout(() => s.remove(), 750);
+}
+
+function tapTile(side){
+  const p = pairs[idx];
+  const tile = side === 'left' ? tileLeft : tileRight;
+  const data = side === 'left' ? p.left : p.right;
+
+  tile.classList.remove('pop');
+  void tile.offsetWidth;
+  tile.classList.add('pop');
+  burst(tile);
+  speak(data.word, data.tag);
+
+  if (navigator.vibrate) navigator.vibrate(25);
+}
+
+tileLeft.addEventListener('click', () => tapTile('left'));
+tileRight.addEventListener('click', () => tapTile('right'));
+
+// iOS Safari sometimes needs speechSynthesis "unlocked" with a silent
+// utterance fired from the very first user gesture, or later speak()
+// calls get silently dropped.
+let audioUnlocked = false;
+function unlockAudio(){
+  if (audioUnlocked || !('speechSynthesis' in window)) return;
+  audioUnlocked = true;
+  const u = new SpeechSynthesisUtterance('');
+  u.volume = 0;
+  speechSynthesis.speak(u);
+}
+document.body.addEventListener('click', unlockAudio, { once:true });
+
+function goTo(newIdx){
+  idx = (newIdx + pairs.length) % pairs.length;
+  renderPair();
+}
+document.getElementById('prevBtn').addEventListener('click', () => goTo(idx - 1));
+document.getElementById('nextBtn').addEventListener('click', () => goTo(idx + 1));
+
+renderPair();
+</script>
+</body>
+</html>
