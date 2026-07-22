@@ -238,9 +238,14 @@ function renderPair(){
 
 // --- Speech ---
 let enVoice = null;
+const NOVELTY_VOICES = ['Albert','Bad News','Bahh','Bells','Boing','Bubbles','Cellos','Deranged','Good News','Hysterical','Pipe Organ','Trinoids','Whisper','Zarvox','Wobble','Jester','Organ','Superstar'];
 function pickVoice(){
   const voices = speechSynthesis.getVoices();
-  enVoice = voices.find(v => v.lang === 'en-GB')
+  const clean = voices.filter(v => !NOVELTY_VOICES.some(n => v.name.includes(n)));
+  enVoice = clean.find(v => v.lang === 'en-GB' && /Daniel|Kate|Serena|Stephanie|Arthur|Martha/i.test(v.name))
+        || clean.find(v => v.lang === 'en-GB')
+        || clean.find(v => v.lang && v.lang.startsWith('en'))
+        || voices.find(v => v.lang === 'en-GB')
         || voices.find(v => v.lang && v.lang.startsWith('en'))
         || null;
 }
@@ -255,13 +260,15 @@ function speak(word, tag){
   const u1 = new SpeechSynthesisUtterance(word);
   u1.lang = 'en-GB';
   if (enVoice) u1.voice = enVoice;
-  u1.rate = 0.82;
-  u1.pitch = 1.1;
+  u1.rate = 0.88;
+  u1.pitch = 1.0;
+  u1.volume = 1.0;
   const u2 = new SpeechSynthesisUtterance('It\u2019s ' + tag);
   u2.lang = 'en-GB';
   if (enVoice) u2.voice = enVoice;
-  u2.rate = 0.85;
-  u2.pitch = 1.1;
+  u2.rate = 0.9;
+  u2.pitch = 1.0;
+  u2.volume = 1.0;
   speechSynthesis.speak(u1);
   speechSynthesis.speak(u2);
 }
