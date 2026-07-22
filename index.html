@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
+<script>
+if (localStorage.getItem('ben_authed') !== 'true') {
+  window.location.replace('login.html?next=index.html');
+}
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
 <title>Ben's Apps</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
