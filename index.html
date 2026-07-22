@@ -126,6 +126,21 @@
   <div class="footnote">Tap a card to open · tap the stars to rate</div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyAkpHYce32g6WZ1Vw1--0dUf_sHkA0IQMI",
+  authDomain: "ben-apps-a71f6.firebaseapp.com",
+  databaseURL: "https://ben-apps-a71f6-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ben-apps-a71f6",
+  storageBucket: "ben-apps-a71f6.firebasestorage.app",
+  messagingSenderId: "163616174580",
+  appId: "1:163616174580:web:70e8a99d31a793b21449a1"
+});
+firebase.auth().signInAnonymously().catch(e => console.error('Auth failed', e));
+</script>
 <script>
 const apps = [
   { id:'soundpop', name:'Sound Pop', emoji:'🔤', href:'sound-pop.html' },
@@ -138,15 +153,38 @@ const skills = [
   { key:'read', label:'I can read' },
 ];
 
+const liveCounts = {};
+const liveRatings = {};
+
 function getCount(id){
-  return parseInt(localStorage.getItem('openCount_' + id) || '0', 10);
+  return liveCounts[id] || 0;
 }
 function getRating(id, key){
-  return parseInt(localStorage.getItem('rating_' + id + '_' + key) || '0', 10);
+  return liveRatings[id + '_' + key] || 0;
 }
 function setRating(id, key, value){
-  localStorage.setItem('rating_' + id + '_' + key, String(value));
+  firebase.database().ref('ratings/' + id + '/' + key).set(value);
 }
+
+function attachListeners(){
+  const db = firebase.database();
+  apps.forEach(app => {
+    db.ref('openCount/' + app.id).on('value', snap => {
+      liveCounts[app.id] = snap.val() || 0;
+      render();
+    });
+    skills.forEach(s => {
+      db.ref('ratings/' + app.id + '/' + s.key).on('value', snap => {
+        liveRatings[app.id + '_' + s.key] = snap.val() || 0;
+        render();
+      });
+    });
+  });
+}
+
+firebase.auth().onAuthStateChanged(user => {
+  if (user) attachListeners();
+});
 
 function starsHtml(id, key){
   const current = getRating(id, key);
