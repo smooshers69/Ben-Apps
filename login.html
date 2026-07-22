@@ -80,11 +80,23 @@
   </form>
 </div>
 <script>
-document.getElementById('loginForm').addEventListener('submit', function(e){
+async function sha256(text){
+  const data = new TextEncoder().encode(text);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// SHA-256 hashes of the expected username and password — not the plaintext itself
+const USER_HASH = '6700869c8ff7480e34a70a708b028700dbaa3a033b5652b903afe89f49a31456';
+const PASS_HASH = '6700869c8ff7480e34a70a708b028700dbaa3a033b5652b903afe89f49a31456';
+
+document.getElementById('loginForm').addEventListener('submit', async function(e){
   e.preventDefault();
   const u = document.getElementById('user').value.trim().toLowerCase();
   const p = document.getElementById('pass').value;
-  if (u === 'ben' && p === 'ben'){
+  const uHash = await sha256(u);
+  const pHash = await sha256(p);
+  if (uHash === USER_HASH && pHash === PASS_HASH){
     localStorage.setItem('ben_authed', 'true');
     const params = new URLSearchParams(window.location.search);
     const next = params.get('next') || 'index.html';
