@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Ben's Apps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#2B2140; --paper:#FFF8EC; }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--paper);
+    font-family:'Nunito', sans-serif;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .card{
+    width:100%; max-width:340px;
+    border:5px solid var(--ink);
+    border-radius:28px;
+    background:#fff;
+    padding:28px 24px;
+    margin:16px;
+    text-align:center;
+  }
+  h1{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:24px;
+    color:var(--ink);
+    margin:0 0 20px;
+  }
+  h1 span{ color:#FF6B5B; }
+  input{
+    width:100%;
+    font-family:'Nunito', sans-serif;
+    font-weight:700;
+    font-size:16px;
+    padding:12px 14px;
+    border:3px solid var(--ink);
+    border-radius:14px;
+    margin-bottom:12px;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  input:focus{ outline:none; }
+  button{
+    width:100%;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:17px;
+    color:#fff;
+    background:var(--ink);
+    border:none;
+    padding:13px;
+    border-radius:14px;
+    cursor:pointer;
+    margin-top:4px;
+  }
+  button:active{ transform:scale(0.97); }
+  .error{
+    color:#E5483B;
+    font-weight:700;
+    font-size:14px;
+    margin-top:10px;
+    min-height:18px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Ben's <span>Apps</span></h1>
+  <form id="loginForm" autocomplete="off">
+    <input type="text" id="user" placeholder="Username" autocapitalize="off" autocorrect="off">
+    <input type="password" id="pass" placeholder="Password">
+    <button type="submit">Log in</button>
+    <div class="error" id="error"></div>
+  </form>
+</div>
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const u = document.getElementById('user').value.trim().toLowerCase();
+  const p = document.getElementById('pass').value;
+  if (u === 'ben' && p === 'ben'){
+    localStorage.setItem('ben_authed', 'true');
+    const params = new URLSearchParams(window.location.search);
+    const next = params.get('next') || 'index.html';
+    window.location.replace(next);
+  } else {
+    document.getElementById('error').textContent = 'Wrong username or password';
+  }
+});
+</script>
+</body>
+</html>
