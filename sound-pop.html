@@ -322,6 +322,13 @@ stage.addEventListener('touchend', e => {
 }, {passive:true});
 
 renderPair();
+
+// Track opens for the menu page (shared localStorage across all apps on this origin)
+try {
+  const key = 'openCount_soundpop';
+  const n = parseInt(localStorage.getItem(key) || '0', 10) + 1;
+  localStorage.setItem(key, String(n));
+} catch (e) {}
 </script>
 </body>
 </html>
