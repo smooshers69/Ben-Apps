@@ -310,13 +310,27 @@ document.getElementById('prevBtn').addEventListener('click', () => goTo(idx - 1)
 document.getElementById('nextBtn').addEventListener('click', () => goTo(idx + 1));
 
 renderPair();
+</script>
 
-// Track opens for the menu page (shared localStorage across all apps on this origin)
-try {
-  const key = 'openCount_thingspop';
-  const n = parseInt(localStorage.getItem(key) || '0', 10) + 1;
-  localStorage.setItem(key, String(n));
-} catch (e) {}
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyAkpHYce32g6WZ1Vw1--0dUf_sHkA0IQMI",
+  authDomain: "ben-apps-a71f6.firebaseapp.com",
+  databaseURL: "https://ben-apps-a71f6-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ben-apps-a71f6",
+  storageBucket: "ben-apps-a71f6.firebasestorage.app",
+  messagingSenderId: "163616174580",
+  appId: "1:163616174580:web:70e8a99d31a793b21449a1"
+});
+firebase.auth().signInAnonymously().catch(e => console.error('Auth failed', e));
+firebase.auth().onAuthStateChanged(user => {
+  if (user){
+    firebase.database().ref('openCount/thingspop').transaction(current => (current || 0) + 1);
+  }
+});
 </script>
 </body>
 </html>
