@@ -47,6 +47,17 @@ if (localStorage.getItem('ben_authed') !== 'true') {
     background:#fff;
     position:relative;
   }
+  .section-title{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    color:var(--ink);
+    opacity:0.55;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    margin:22px 4px 10px;
+  }
+  .section-title:first-child{ margin-top:0; }
   .card-top{
     display:flex;
     align-items:center;
@@ -149,9 +160,12 @@ firebase.auth().signInAnonymously().catch(e => console.error('Auth failed', e));
 </script>
 <script>
 const apps = [
-  { id:'soundpop', name:'Sound Pop', emoji:'🔤', href:'sound-pop.html' },
-  { id:'colourpop', name:'Colour Pop', emoji:'🎨', href:'colour-pop.html' },
-  { id:'thingspop', name:'Things Pop', emoji:'🧸', href:'things-pop.html' },
+  { id:'soundpop', name:'Sound Pop', emoji:'🔤', href:'sound-pop.html', group:'en' },
+  { id:'colourpop', name:'Colour Pop', emoji:'🎨', href:'colour-pop.html', group:'en' },
+  { id:'thingspop', name:'Things Pop', emoji:'🧸', href:'things-pop.html', group:'en' },
+  { id:'otopop', name:'おとポップ', emoji:'🔤', href:'oto-pop.html', group:'ja' },
+  { id:'iropop', name:'いろポップ', emoji:'🎨', href:'iro-pop.html', group:'ja' },
+  { id:'monopop', name:'モノポップ', emoji:'🧸', href:'mono-pop.html', group:'ja' },
 ];
 const skills = [
   { key:'listen', label:'I can listen' },
@@ -201,31 +215,39 @@ function starsHtml(id, key){
   return html;
 }
 
+function cardHtml(app){
+  const count = getCount(app.id);
+  const countText = count === 1 ? '1 visit' : count + ' visits';
+  const skillRows = skills.map(s => `
+    <div class="skill-row">
+      <div class="skill-label">${s.label}</div>
+      <div class="stars">${starsHtml(app.id, s.key)}</div>
+    </div>
+  `).join('');
+  return `
+    <div class="card">
+      <a class="card-top" href="${app.href}" style="text-decoration:none;">
+        <div class="card-emoji">${app.emoji}</div>
+        <div class="card-titlewrap">
+          <div class="card-title">${app.name}</div>
+          <div class="card-count">${countText}</div>
+        </div>
+        <div class="go">Open</div>
+      </a>
+      <div class="skills">${skillRows}</div>
+    </div>
+  `;
+}
+
 function render(){
   const container = document.getElementById('cards');
-  container.innerHTML = apps.map(app => {
-    const count = getCount(app.id);
-    const countText = count === 1 ? '1 visit' : count + ' visits';
-    const skillRows = skills.map(s => `
-      <div class="skill-row">
-        <div class="skill-label">${s.label}</div>
-        <div class="stars">${starsHtml(app.id, s.key)}</div>
-      </div>
-    `).join('');
-    return `
-      <div class="card">
-        <a class="card-top" href="${app.href}" style="text-decoration:none;">
-          <div class="card-emoji">${app.emoji}</div>
-          <div class="card-titlewrap">
-            <div class="card-title">${app.name}</div>
-            <div class="card-count">${countText}</div>
-          </div>
-          <div class="go">Open</div>
-        </a>
-        <div class="skills">${skillRows}</div>
-      </div>
-    `;
-  }).join('');
+  const enApps = apps.filter(a => a.group === 'en');
+  const jaApps = apps.filter(a => a.group === 'ja');
+  container.innerHTML =
+    '<div class="section-title">English</div>' +
+    enApps.map(cardHtml).join('') +
+    '<div class="section-title">日本語</div>' +
+    jaApps.map(cardHtml).join('');
 
   container.querySelectorAll('.star').forEach(star => {
     star.addEventListener('click', (e) => {
