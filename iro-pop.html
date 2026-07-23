@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+<script>
+if (localStorage.getItem('ben_authed') !== 'true') {
+  window.location.replace('login.html?next=iro-pop.html');
+}
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<title>いろポップ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;800&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#2B2140; --paper:#FFF8EC; }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
+  html,body{
+    margin:0; padding:0; height:100%; overflow:hidden;
+    background:var(--paper);
+    font-family:'Nunito', sans-serif;
+    touch-action:manipulation;
+  }
+  .app{
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+  }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 4px 6px 10px;
+  }
+  .brand{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:22px;
+    color:var(--ink);
+  }
+  .brand span{color:#FF6B5B;}
+  .navchip{
+    font-family:'Zen Maru Gothic', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--ink);
+    background:#fff;
+    border:2px solid var(--ink);
+    border-radius:999px;
+    padding:6px 12px;
+    opacity:0.85;
+  }
+  .stage{
+    flex:1;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    min-height:0;
+  }
+  .tile{
+    position:relative;
+    border-radius:32px;
+    border:5px solid var(--ink);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    overflow:hidden;
+    cursor:pointer;
+    transition: transform 0.08s ease;
+  }
+  .tile:active{ transform:scale(0.94); }
+  .tile.pop{ animation: pop 0.42s ease; }
+  @keyframes pop{
+    0%{ transform:scale(1); }
+    30%{ transform:scale(1.08) rotate(-2deg); }
+    55%{ transform:scale(0.96) rotate(2deg); }
+    100%{ transform:scale(1); }
+  }
+  .colourname{
+    font-family:'Zen Maru Gothic', sans-serif;
+    font-weight:900;
+    font-size:min(12vw, 54px);
+    line-height:1;
+    text-shadow: 3px 3px 0 rgba(255,255,255,0.35);
+    text-align:center;
+  }
+  .emoji{
+    font-size:min(20vw, 120px);
+    line-height:1;
+    filter: drop-shadow(0 6px 0 rgba(0,0,0,0.12));
+  }
+  .word{
+    font-family:'Zen Maru Gothic', sans-serif;
+    font-weight:700;
+    font-size:min(6vw, 24px);
+    padding:3px 14px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.65);
+    color:var(--ink);
+  }
+  .sparkle{
+    position:absolute;
+    font-size:38px;
+    opacity:0;
+    pointer-events:none;
+  }
+  .sparkle.go{ animation: rise 0.7s ease-out forwards; }
+  @keyframes rise{
+    0%{ opacity:1; transform:translateY(0) scale(0.6) rotate(0deg); }
+    100%{ opacity:0; transform:translateY(-70px) scale(1.3) rotate(30deg); }
+  }
+  .bottombar{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    padding-top:12px;
+  }
+  .navbtn{
+    width:52px; height:52px;
+    border-radius:50%;
+    border:3px solid var(--ink);
+    background:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .navbtn:active{ transform:scale(0.9); }
+  .dots{ display:flex; gap:6px; }
+  .dot{ width:9px; height:9px; border-radius:50%; background:#D8D0E6; }
+  .dot.active{ background:var(--ink); width:22px; border-radius:6px; transition: all 0.2s ease; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">いろ<span>ポップ</span></div>
+    <div class="navchip" id="pairLabel">あか・あお</div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="tile" id="tileLeft">
+      <div class="colourname" id="nameLeft">あか</div>
+      <div class="emoji" id="emojiLeft">🍎</div>
+      <div class="word" id="wordLeft">りんご</div>
+    </div>
+    <div class="tile" id="tileRight">
+      <div class="colourname" id="nameRight">あお</div>
+      <div class="emoji" id="emojiRight">🌊</div>
+      <div class="word" id="wordRight">うみ</div>
+    </div>
+  </div>
+
+  <div class="bottombar">
+    <div class="navbtn" id="prevBtn">‹</div>
+    <div class="dots" id="dots"></div>
+    <div class="navbtn" id="nextBtn">›</div>
+  </div>
+</div>
+
+<script>
+const pairs = [
+  { names:['あか','あお'], swatches:['#E5483B','#3B6FE4'], textOn:['#FFF8EC','#FFF8EC'],
+    left:{emoji:'🍎', word:'りんご'}, right:{emoji:'🌊', word:'うみ'} },
+  { names:['きいろ','みどり'], swatches:['#F0C93B','#4CAF6B'], textOn:['#2B2140','#FFF8EC'],
+    left:{emoji:'🍌', word:'バナナ'}, right:{emoji:'🐸', word:'かえる'} },
+  { names:['オレンジ','むらさき'], swatches:['#F0903C','#8B5CF6'], textOn:['#2B2140','#FFF8EC'],
+    left:{emoji:'🍊', word:'みかん'}, right:{emoji:'🍇', word:'ぶどう'} },
+  { names:['ピンク','ちゃいろ'], swatches:['#F49AC2','#8B5E3C'], textOn:['#2B2140','#FFF8EC'],
+    left:{emoji:'🌸', word:'さくら'}, right:{emoji:'🐻', word:'くま'} },
+  { names:['くろ','しろ'], swatches:['#3A3A3A','#F5F5F0'], textOn:['#FFF8EC','#2B2140'],
+    left:{emoji:'🐱', word:'ねこ'}, right:{emoji:'☁️', word:'くも'} },
+];
+
+let idx = 0;
+const stage = document.getElementById('stage');
+const tileLeft = document.getElementById('tileLeft');
+const tileRight = document.getElementById('tileRight');
+const nameLeft = document.getElementById('nameLeft');
+const nameRight = document.getElementById('nameRight');
+const emojiLeft = document.getElementById('emojiLeft');
+const emojiRight = document.getElementById('emojiRight');
+const wordLeft = document.getElementById('wordLeft');
+const wordRight = document.getElementById('wordRight');
+const pairLabel = document.getElementById('pairLabel');
+const dotsEl = document.getElementById('dots');
+
+function renderDots(){
+  dotsEl.innerHTML = '';
+  pairs.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === idx ? ' active' : '');
+    dotsEl.appendChild(d);
+  });
+}
+
+function renderPair(){
+  const p = pairs[idx];
+  tileLeft.style.background = p.swatches[0];
+  tileRight.style.background = p.swatches[1];
+  nameLeft.style.color = p.textOn[0];
+  nameRight.style.color = p.textOn[1];
+  nameLeft.textContent = p.names[0];
+  nameRight.textContent = p.names[1];
+  emojiLeft.textContent = p.left.emoji;
+  emojiRight.textContent = p.right.emoji;
+  wordLeft.textContent = p.left.word;
+  wordRight.textContent = p.right.word;
+  pairLabel.textContent = p.names[0] + '・' + p.names[1];
+  renderDots();
+}
+
+// --- Speech ---
+let jaVoice = null;
+const NOVELTY_VOICES = ['Albert','Bad News','Bahh','Bells','Boing','Bubbles','Cellos','Deranged','Good News','Hysterical','Pipe Organ','Trinoids','Whisper','Zarvox','Wobble','Jester','Organ','Superstar'];
+function pickVoice(){
+  const voices = speechSynthesis.getVoices();
+  const clean = voices.filter(v => !NOVELTY_VOICES.some(n => v.name.includes(n)));
+  jaVoice = clean.find(v => v.lang === 'ja-JP')
+        || clean.find(v => v.lang && v.lang.startsWith('ja'))
+        || voices.find(v => v.lang === 'ja-JP')
+        || voices.find(v => v.lang && v.lang.startsWith('ja'))
+        || null;
+}
+if ('speechSynthesis' in window){
+  pickVoice();
+  speechSynthesis.onvoiceschanged = pickVoice;
+}
+
+function speak(colourName, word){
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u1 = new SpeechSynthesisUtterance(colourName);
+  u1.lang = 'ja-JP';
+  if (jaVoice) u1.voice = jaVoice;
+  u1.rate = 0.85;
+  u1.pitch = 1.0;
+  u1.volume = 1.0;
+  const u2 = new SpeechSynthesisUtterance(word);
+  u2.lang = 'ja-JP';
+  if (jaVoice) u2.voice = jaVoice;
+  u2.rate = 0.9;
+  u2.pitch = 1.0;
+  u2.volume = 1.0;
+  speechSynthesis.speak(u1);
+  speechSynthesis.speak(u2);
+}
+
+const sparkleEmojis = ['✨','⭐️','🌟','💥'];
+function burst(tile){
+  const s = document.createElement('div');
+  s.className = 'sparkle';
+  s.textContent = sparkleEmojis[Math.floor(Math.random()*sparkleEmojis.length)];
+  s.style.left = (30 + Math.random()*40) + '%';
+  s.style.top = (25 + Math.random()*30) + '%';
+  tile.appendChild(s);
+  requestAnimationFrame(() => s.classList.add('go'));
+  setTimeout(() => s.remove(), 750);
+}
+
+function tapTile(side){
+  const p = pairs[idx];
+  const tile = side === 'left' ? tileLeft : tileRight;
+  const data = side === 'left' ? p.left : p.right;
+  const name = side === 'left' ? p.names[0] : p.names[1];
+
+  tile.classList.remove('pop');
+  void tile.offsetWidth;
+  tile.classList.add('pop');
+  burst(tile);
+  speak(name, data.word);
+
+  if (navigator.vibrate) navigator.vibrate(25);
+}
+
+tileLeft.addEventListener('click', () => tapTile('left'));
+tileRight.addEventListener('click', () => tapTile('right'));
+
+let audioUnlocked = false;
+function unlockAudio(){
+  if (audioUnlocked || !('speechSynthesis' in window)) return;
+  audioUnlocked = true;
+  const u = new SpeechSynthesisUtterance('');
+  u.volume = 0;
+  speechSynthesis.speak(u);
+}
+document.body.addEventListener('click', unlockAudio, { once:true });
+
+function goTo(newIdx){
+  idx = (newIdx + pairs.length) % pairs.length;
+  renderPair();
+}
+document.getElementById('prevBtn').addEventListener('click', () => goTo(idx - 1));
+document.getElementById('nextBtn').addEventListener('click', () => goTo(idx + 1));
+
+renderPair();
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyAkpHYce32g6WZ1Vw1--0dUf_sHkA0IQMI",
+  authDomain: "ben-apps-a71f6.firebaseapp.com",
+  databaseURL: "https://ben-apps-a71f6-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ben-apps-a71f6",
+  storageBucket: "ben-apps-a71f6.firebasestorage.app",
+  messagingSenderId: "163616174580",
+  appId: "1:163616174580:web:70e8a99d31a793b21449a1"
+});
+firebase.auth().signInAnonymously().catch(e => console.error('Auth failed', e));
+firebase.auth().onAuthStateChanged(user => {
+  if (user){
+    firebase.database().ref('openCount/iropop').transaction(current => (current || 0) + 1);
+  }
+});
+</script>
+</body>
+</html>
